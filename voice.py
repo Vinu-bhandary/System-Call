@@ -5,6 +5,7 @@ import speech_recognition as sr
 import winreg
 import pyttsx3
 import time
+from PIL import Image, ImageTk
 from file_operation_test import create_folder, rename_folder, move_folder, delete_folder, open_folder, find_folder
 
 recognizer = sr.Recognizer()
@@ -79,10 +80,10 @@ def process_text(text):
 
 def listen_and_display():
     with sr.Microphone() as source:
-        update_status("Listening...", "green")  
+        update_text("Listening...")  
         audio = recognizer.listen(source)
         
-        update_status("Recognising...", "yellow")  
+        update_text("Recognising...")  
 
         try:
             text = recognizer.recognize_google(audio)
@@ -94,13 +95,14 @@ def listen_and_display():
             text = "Sorry, I didn't understand that."
             update_text(text)
             speak(text)
+            time.sleep(1)
         except sr.RequestError:
             text = "Could not request results; check your network connection."
             update_text(text)
             speak(text)
-        
-        update_status("Click 'Start' to speak", "blue")
-        update_text("")  
+            time.sleep(1)
+
+        update_text("Click 'Start' to speak")  
 
 def update_text(text):
     text_area.config(state=tk.NORMAL)
@@ -108,47 +110,35 @@ def update_text(text):
     text_area.insert(tk.END, text)
     text_area.config(state=tk.DISABLED)
 
-def update_status(message, color):
-    status_label.config(text=message)
-    status_label.config(fg=color)
-    if color:
-        animate_status()
-
-def animate_status():
-    original_color = status_label.cget("fg")
-    for i in range(5):  
-        status_label.config(fg="lightgreen")
-        root.update()
-        time.sleep(0.1)
-        status_label.config(fg=original_color)
-        root.update()
-        time.sleep(0.1)
-
 def start_assistant():
     threading.Thread(target=listen_and_display).start()
 
 root = tk.Tk()
-root.title("Voice Assistant")
-root.geometry("500x400")
-root.configure(bg="#f0f0f5")
+root.title("System Call")
+root.geometry("1349x769")
+
+background_image = Image.open("img/bg.png") 
+background_photo = ImageTk.PhotoImage(background_image)
+
+background_label = tk.Label(root, image=background_photo)
+background_label.place(x=0, y=0, relwidth=1, relheight=1) 
+
+status_label = tk.Label(root, text="System Call - Voice Assistant", font=("Arial", 18), fg="blue", bg=None)
+status_label.place(relx=0.4, rely=0.2)
+
 
 style = ttk.Style()
 style.configure("TButton", font=("Arial", 14), padding=10)
-style.configure("TLabel", font=("Arial", 14), background="#f0f0f5")
-style.configure("TFrame", background="#f0f0f5")
 
-main_frame = ttk.Frame(root, padding=20)
-main_frame.pack(expand=True)
-
-status_label = tk.Label(main_frame, text="Click 'Start' to speak", font=("Arial", 14), fg="blue", bg="#f0f0f5")
-status_label.pack(pady=10)
-
-text_area = tk.Text(main_frame, height=7, width=45, font=("Arial", 12), wrap="word", bg="#e6e6fa", fg="#333")
-text_area.pack(pady=10)
+text_area = tk.Text(root, height=7, width=45, font=("Arial", 12), wrap="word", bg="#C1DBE2", fg="#333")
+text_area.place(relx=0.375, rely=0.4)
 text_area.config(state=tk.DISABLED)
 text_area.config(highlightthickness=1, highlightbackground="#d1d1e0")
 
-start_button = ttk.Button(main_frame, text="🎤 Start Listening", command=start_assistant, style="TButton")
-start_button.pack(pady=20)
+update_text("Click 'Start' to speak")
+
+
+start_button = ttk.Button(root, text="🎤 Start The Assistant", command=start_assistant, style="TButton")
+start_button.place(relx=0.435, rely=0.75)
 
 root.mainloop()
